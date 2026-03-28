@@ -1,0 +1,1297 @@
+# SAGES Baseline Rubric DAG v0.1 (patched with evidence_profile per group)
+# Leaf scoring: 0..5
+# N/A handling: gated leaves are excluded; weights renormalize among remaining siblings
+# Default leaf weight in a group: module_weight * group_weight / (#leaves in group)
+
+root:
+  id: R0
+  name: Repository Quality Score
+  aggregation: weighted_mean_over_enabled_modules
+
+evidence_profiles:
+
+  # -----------------------
+  # Repo/documentation files
+  # -----------------------
+
+  doc_files_basic:
+    grading_mode: deterministic
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "LICENSE*"
+          - "COPYING*"
+          - "CONTRIBUTING*"
+          - "CODE_OF_CONDUCT*"
+
+  doc_files_basic_with_content:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "LICENSE*"
+          - "COPYING*"
+          - "CONTRIBUTING*"
+          - "CODE_OF_CONDUCT*"
+          - "SECURITY*"
+          - "SUPPORT*"
+          - "GOVERNANCE*"
+          - "AUTHORS*"
+          - "MAINTAINERS*"
+          - "docs/contributing*"
+          - "docs/CONTRIBUTING*"
+          - "docs/security*"
+          - "docs/SECURITY*"
+          - "docs/support*"
+          - "docs/GOVERNANCE*"
+          - ".github/FUNDING.yml"
+          - ".github/CODEOWNERS"
+          - ".github/SUPPORT*"
+          - ".github/ISSUE_TEMPLATE/config.yml"
+          - ".github/DISCUSSION_TEMPLATE/**"
+          - ".github/SECURITY*"
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 120
+        queries:
+          - "SPDX-License-Identifier"
+          - "MIT License"
+          - "Apache License"
+          - "GNU GENERAL PUBLIC LICENSE"
+          - "Maintainer"
+          - "Maintainers"
+          - "Contact"
+          - "Email"
+          - "Contributing"
+          - "Governance"
+          - "Support"
+          - "Security Policy"
+          - "Code of Conduct"
+
+  doc_files_plus_templates_and_changelog:
+    grading_mode: deterministic
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "LICENSE*"
+          - "COPYING*"
+          - "CONTRIBUTING*"
+          - "CODE_OF_CONDUCT*"
+          - "CHANGELOG*"
+          - "HISTORY*"
+          - "NEWS*"
+          - "MIGRATION*"
+          - "UPGRADE*"
+          - "UPGRADING*"
+          - "RELEASING*"
+          - "RELEASE_NOTES*"
+          - "changes/**"
+          - "changelog.d/**"
+          - "newsfragments/**"
+          - ".changes/**"
+          - "releasenotes/**"
+          - "docs/changelog*"
+          - "docs/changelog/**"
+          - "docs/CHANGELOG*"
+          - "docs/history*"
+          - "docs/news*"
+          - "docs/releases/**"
+          - "docs/changes/**"
+          - "docs/migration*"
+          - "docs/MIGRATION*"
+          - "docs/upgrade*"
+          - "docs/UPGRADE*"
+          - "docs/upgrading*"
+          - "docs/UPGRADING*"
+          - "docs/release*"
+          - "docs/RELEASE*"
+          - ".github/ISSUE_TEMPLATE/**"
+          - ".github/ISSUE_TEMPLATE*"
+          - ".github/ISSUE_TEMPLATE/config.yml"
+          - ".github/ISSUE_TEMPLATE.md"
+          - ".github/issue_template/**"
+          - ".github/PULL_REQUEST_TEMPLATE*"
+          - ".github/pull_request_template*"
+          - ".github/PULL_REQUEST_TEMPLATE/**"
+          - ".github/release-drafter*"
+          - ".github/release-drafter/**"
+          - ".github/SECURITY*"
+
+  docs_arch_and_adr:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "docs/**"
+          - "docs/architecture/**"
+          - "docs/design/**"
+          - "docs/decisions/**"
+          - "architecture/**"
+          - "design/**"
+          - "ARCHITECTURE*"
+          - "DESIGN*"
+          - "ADR*"
+          - "adr/**"
+          - ".adr/**"
+          - "decision-records/**"
+          - "docs/adr/**"
+      - strategy: code_search
+        # max_files: 8
+        # max_snippet_lines: 120
+        queries:
+          - "ADR"
+          - "Decision Record"
+          - "Architecture Decision"
+          - "RFC"
+          - "Architecture"
+          - "Design decision"
+          - "Module"
+          - "Service"
+
+  # -----------------------
+  # Repo structure / metadata
+  # -----------------------
+
+  repo_structure_scan:
+    grading_mode: deterministic
+    evidence:
+      - strategy: repo_scan
+        checks:
+          - "top_level_layout"
+          - "binary_blobs"
+          - "generated_artifacts"
+          - "gitignore_quality"
+          - "languages_detected"
+          - "main_entry_candidates"
+
+  repo_entrypoints_discovery:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: repo_scan
+        checks: ["top_level_layout", "binary_blobs", "generated_artifacts", "gitignore_quality", "languages_detected", "main_entry_candidates"]
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "docs/index*"
+          - "docs/guide*"
+          - "docs/quickstart*"
+          - "docs/getting-started*"
+          - "examples/**"
+          - "bin/**"
+          - "cmd/**"
+          - "package.json"
+          - "pyproject.toml"
+          - "setup.py"
+          - "setup.cfg"
+          - "tox.ini"
+          - "Cargo.toml"
+          - "go.mod"
+          - "composer.json"
+          - "src/**/__init__.py"
+      - strategy: code_search
+        max_files: 8
+        max_snippet_lines: 60
+        max_snippets_total: 10
+        max_snippets_per_query: 3
+        queries:
+          - "\"main\""
+          - "\"module\""
+          - "\"exports\""
+          - "\"types\""
+          - "\"bin\""
+          - "if __name__ == '__main__'"
+          - "console_scripts"
+          - "entry_points"
+          - "from .* import"
+          - "public API"
+          - "Getting Started"
+          - "Quickstart"
+          - "Examples"
+          - "CLI"
+          - "Usage"
+
+  # -----------------------
+  # Build / env definition
+  # -----------------------
+
+  build_and_toolchain_declaration:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "docs/install*"
+          - "docs/setup*"
+          - "docs/quickstart*"
+          - "docs/getting-started*"
+          - "Makefile"
+          - "justfile"
+          - "Taskfile.yml"
+          - "scripts/bootstrap*"
+          - "package.json"
+          - "composer.json"
+          - "composer.lock"
+          - ".tool-versions"
+          - ".github/actions/**"
+          - ".github/workflows/**"
+          - ".github/dependabot*"
+          - ".github/renovate*"
+          - "Dockerfile*"
+          - "docker-compose*.yml"
+          - "docker-compose*.yaml"
+          - "build.gradle*"
+          - "pom.xml"
+          - "pyproject.toml"
+          - "setup.cfg"
+          - "setup.py"
+          - "go.mod"
+          - "Cargo.toml"
+          - "Gemfile"
+      - strategy: code_search
+        max_files: 15
+        max_snippet_lines: 80
+        max_snippets_total: 20
+        max_snippets_per_query: 3
+        queries:
+          - "composer install"
+          - "composer test"
+          - "php artisan"
+          - "npm install"
+          - "npm run"
+          - "pnpm install"
+          - "yarn install"
+          - "make test"
+          - "make install"
+          - "docker compose"
+          - "docker-compose"
+          - "uv sync"
+          - "tox "
+          - "pytest"
+          - "go test"
+          - "cargo test"
+          - "bootstrap"
+          - "Prerequisites"
+          - "Installation"
+          - "Getting Started"
+          - "Install"
+          - "Quickstart"
+          - "Setup"
+          - "Usage"
+          - "Run"
+
+  env_definition_files:
+    grading_mode: deterministic
+    evidence:
+      - strategy: file_match
+        patterns:
+          - ".devcontainer/**"
+          - "devcontainer.json"
+          - "Dockerfile*"
+          - "docker-compose*.yml"
+          - "docker-compose*.yaml"
+          - "environment.yml"
+          - "conda.yml"
+          - "Pipfile"
+          - "Pipfile.lock"
+          - "poetry.lock"
+          - "requirements*.txt"
+          - "uv.lock"
+          - "flake.nix"
+          - "shell.nix"
+          - ".nvmrc"
+          - ".node-version"
+          - ".python-version"
+          - "toolchain*"
+
+  env_definition_and_defaults:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - ".env.example"
+          - ".env.dist"
+          - ".env.*"
+          - "Dockerfile*"
+          - "docker-compose*.yml"
+          - "docker-compose*.yaml"
+          - ".devcontainer/**"
+          - "devcontainer.json"
+          - "config/**"
+          - "bootstrap/**"
+          - "environment.yml"
+          - "conda.yml"
+          - "Pipfile"
+          - "Pipfile.lock"
+          - "poetry.lock"
+          - "requirements*.txt"
+          - "uv.lock"
+          - "flake.nix"
+          - "shell.nix"
+          - ".nvmrc"
+          - ".node-version"
+          - ".python-version"
+          - "toolchain*"
+      - strategy: code_search
+        # max_files: 14
+        # max_snippet_lines: 120
+        queries:
+          - "APP_KEY"
+          - "DB_PASSWORD"
+          - "DB_HOST"
+          - "REDIS"
+          - "JWT"
+          - "SECRET"
+          - "getenv"
+          - "env("
+          - "dotenv"
+          - "example"
+          - "placeholder"
+
+  # -----------------------
+  # Dependencies / SCA
+  # -----------------------
+
+  dependency_hygiene_policy:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "composer.json"
+          - "composer.lock"
+          - "package.json"
+          - "package-lock.json"
+          - "yarn.lock"
+          - "pnpm-lock.yaml"
+          - "requirements*.txt"
+          - "pyproject.toml"
+          - "go.mod"
+          - "go.sum"
+          - "Cargo.toml"
+          - ".github/dependabot*"
+          - ".github/renovate*"
+      - strategy: dynamic_tool
+        evidence_class: dependency_scanner
+        output: {format: json}
+      - strategy: dynamic_tool
+        evidence_class: dependency_inventory
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 14
+        # max_snippet_lines: 140
+        queries:
+          - "git+"
+          - "github.com/"
+          - "bitbucket.org/"
+          - "path:"
+          - "repository"
+          - "repositories"
+          - "curl "
+          - "wget "
+          - "Invoke-WebRequest"
+
+  dependency_locking_and_sca:
+    grading_mode: deterministic
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "package-lock.json"
+          - "pnpm-lock.yaml"
+          - "yarn.lock"
+          - "requirements*.txt"
+          - "poetry.lock"
+          - "Pipfile.lock"
+          - "uv.lock"
+          - "go.sum"
+          - "Cargo.lock"
+          - "Gemfile.lock"
+          - "composer.lock"
+          - "pom.xml"
+          - "build.gradle*"
+          - "*.csproj"
+      - strategy: dynamic_tool
+        evidence_class: dependency_scanner
+        output: {format: json}
+
+  dependency_minimization_hints:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: dependency_inventory
+        output: {format: json}
+      - strategy: file_match
+        patterns:
+          - "package.json"
+          - "pyproject.toml"
+          - "requirements*.txt"
+          - "go.mod"
+          - "Cargo.toml"
+
+  # -----------------------
+  # Linters / style / complexity
+  # -----------------------
+
+  lint_and_style:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: standard_linter
+        output: {format: json_or_text}
+      - strategy: file_match
+        patterns:
+          - ".editorconfig"
+          - "phpstan.neon*"
+          - "phpcs.xml*"
+          - "pint.json"
+          - ".php-cs-fixer.php"
+          - ".php_cs*"
+          - "psalm.xml*"
+          - ".prettierrc*"
+          - "prettier.config.*"
+          - ".eslintrc*"
+          - ".golangci.*"
+          - "pyproject.toml"
+          - "setup.cfg"
+      - strategy: code_search
+        max_files: 6
+        max_snippet_lines: 50
+        max_snippets_total: 8
+        max_snippets_per_query: 2
+        queries:
+          - "TODO"
+          - "FIXME"
+          - "HACK"
+          - "eslint-disable"
+          - "type: ignore"
+
+  complexity_and_duplication:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: complexity_analyzer
+        output: {format: json}
+      - strategy: dynamic_tool
+        evidence_class: duplication_analyzer
+        output: {format: json}
+
+  docs_in_code_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "TODO"
+          - "FIXME"
+          - "NOTE"
+          - "HACK"
+          - "@param"
+          - "@return"
+          - "Raises"
+          - "throws"
+          - "public "
+          - "export "
+
+  # -----------------------
+  # SiMAL-driven architectural metrics
+  # -----------------------
+
+  simal_arch_graph_metrics:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: repo_scan
+        checks: ["file_tree_top", "languages_detected"]
+      - strategy: simal_search
+        max_hits: 20
+        max_total_hits: 50
+        #max_total_chars: 12000
+        max_snippet_lines: 20
+        queries:
+          - "@CALLS("
+          - "imports:"
+          - "dependencies:"
+          - "relations:"
+      - strategy: code_search
+        max_files: 10
+        max_snippet_lines: 100
+        max_snippets_total: 15
+        max_snippets_per_query: 5
+        queries:
+          - "^import "
+          - "^from .+ import "
+          - "require("
+          - "go.mod"
+          - "composer.json"
+          - "package.json"
+          - "^use "          # PHP
+          - "^namespace "    # PHP
+
+  simal_modularity_and_interfaces:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: simal_search
+        max_hits: 30
+        max_total_hits: 50
+        #max_total_chars: 16000
+        max_snippet_lines: 30
+        queries:
+          - "service "
+          - "components:"
+          - "@PATH("
+          - "dependencies:"
+          - "runtime:"
+          - "ci:"
+          - "api:"
+      - strategy: repo_scan
+        checks: ["file_tree_top", "languages_detected", "main_entry_candidates"]
+      - strategy: code_search
+        max_files: 10
+        max_snippet_lines: 60
+        max_snippets_total: 15
+        max_snippets_per_query: 3
+        queries:
+          # stack-aware boundary signals
+          - "internal/"
+          - "cmd/"
+          - "pkg/"
+          - "routes/"
+          - "controllers"
+          - "handlers"
+          - "services"
+          - "config/"
+          - "settings"
+
+  # -----------------------
+  # Reliability / error handling / timeouts (SAST + snippets)
+  # -----------------------
+
+  reliability_error_timeout_rules:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: sast_scanner
+        params: {ruleset: "reliability-errors-timeouts"}
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 15
+        # max_snippet_lines: 80
+        queries:
+          - "timeout"
+          - "retry"
+          - "backoff"
+          - "except"
+          - "catch"
+          - "raise"
+          - "throw"
+          - "return err"
+          - "finally"
+          - "defer"
+          - "validate"   # <-- ADDED for E1.1
+          - "schema"     # <-- ADDED for E1.2
+          - "validator"  # <-- ADDED
+          - "zod"        # <-- ADDED (TS)
+          - "pydantic"   # <-- ADDED (Python)
+          - "Request"    # <-- ADDED (PHP/Go)
+
+  determinism_and_seeds:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        # max_files: 10
+        # max_snippet_lines: 80
+        queries:
+          - "random.seed"
+          - "setSeed"
+          - "torch.manual_seed"
+          - "np.random.seed"
+          - "Date.now"
+          - "time.time"
+          - "System.currentTimeMillis"
+          - "uuid"
+
+  performance_smells_rules:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: sast_scanner
+        params: {ruleset: "performance-smells"}
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "for "
+          - "while "
+          - "select"
+          - "query"
+          - "join"
+          - "cache"
+          - "memo"
+          - "serialize"
+          - "deserialize"
+
+  # -----------------------
+  # Testing / CI
+  # -----------------------
+
+  tests_and_ci_probe:
+    grading_mode:  llm_assisted # deterministic
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "docs/testing*"
+          - "docs/test*"
+          - ".github/actions/**"
+          - ".github/workflows/**"
+          - ".github/dependabot*"
+          - ".gitlab-ci.yml"
+          - "azure-pipelines.yml"
+          - "Jenkinsfile"
+          - "Makefile"
+          - "justfile"
+          - "Taskfile.yml"
+          - "tests/**"
+          - "**/__tests__/**"
+          - "**/*test*.*"
+          - "phpunit.xml*"
+          - "pest.php"
+          - "artisan"
+          - "jest.config.*"
+          - "pytest.ini"
+          - "tox.ini"
+          - "noxfile.py"
+          - "pyproject.toml"
+          - "scripts/test*"
+          - "scripts/install*"
+      - strategy: dynamic_tool
+        evidence_class: test_runner
+        output: {format: junit_or_json}
+
+  # -----------------------
+  # Security
+  # -----------------------
+
+  secrets_scan:
+    grading_mode: deterministic
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: secrets_scanner
+        output: {format: json}
+
+  sca_and_provenance:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: dependency_scanner
+        output: {format: json}
+      - strategy: code_search
+        max_files: 10
+        max_snippet_lines: 80
+        max_snippets_total: 15
+        max_snippets_per_query: 3
+        queries:
+          - "curl "
+          - "wget "
+          - "Invoke-WebRequest"
+          - "powershell"
+          - "gpg"
+          - "checksum"
+          - "sha256sum"
+          - "download"
+          - "NOTICE"
+          - "third_party"
+          - "adapted from"
+      - strategy: file_match
+        patterns:
+          - "NOTICE*"
+          - "package-lock.json"
+          - "pnpm-lock.yaml"
+          - "yarn.lock"
+          - "requirements*.txt"
+          - "poetry.lock"
+          - "Pipfile.lock"
+          - "uv.lock"
+          - "go.sum"
+          - "Cargo.lock"
+          - "Gemfile.lock"
+          - "composer.lock"
+          - "third_party_licenses/**"
+          - "third_party/**"
+
+  injection_and_unsafe_ops:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: sast_scanner
+        params: {ruleset: "injection-and-unsafe"}
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 15
+        # max_snippet_lines: 80
+        queries:
+          - "eval("
+          - "exec("
+          - "pickle"
+          - "yaml.load"
+          - "os.system"
+          - "subprocess"
+          - "SELECT "
+          - "INSERT "
+          - "../"
+
+  auth_and_secure_defaults_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        #max_files: 8
+        #max_snippet_lines: 70
+        #max_snippets_total: 10
+        #max_snippets_per_query: 3
+        queries:
+          - "auth"
+          - "authorize"
+          - "jwt"
+          - "Bearer "
+          - "role"
+          - "permission"
+          - "admin"
+          - "debug"
+          - "APP_DEBUG"
+          - "tls"
+          - "https"
+          - "request_id"
+          - "trace_id"
+
+  # -----------------------
+  # Observability / operability
+  # -----------------------
+
+  observability_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "logger"
+          - "log."
+          - "trace"
+          - "span"
+          - "metric"
+          - "prometheus"
+          - "opentelemetry"
+          - "health"
+          - "readiness"
+          - "liveness"
+          - "shutdown"
+          - "graceful"
+          - "SIGTERM"
+          - "signal"
+          - "fail fast"
+
+  runbook_and_ops_docs:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "RUNBOOK*"
+          - "ops/**"
+          - "docs/runbook*"
+          - "docs/ops/**"
+          - "docs/operations/**"
+          - "docs/troubleshooting*"
+          - "docs/deploy*"
+          - "docs/support*"
+          - ".github/ISSUE_TEMPLATE/config.yml"
+          - "deploy/**"
+      - strategy: code_search
+        # max_files: 6
+        # max_snippet_lines: 120
+        queries:
+          - "runbook"
+          - "how to"
+          - "troubleshoot"
+          - "operational"
+          - "incident"
+          - "deploy"
+          - "rollback"
+
+  # -----------------------
+  # DevOps / infra
+  # -----------------------
+
+  devops_container_k8s_iac:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "Dockerfile*"
+          - "docker-compose*.yml"
+          - "docker-compose*.yaml"
+          - "k8s/**"
+          - "helm/**"
+          - "charts/**"
+          - ".github/actions/**"
+          - ".github/workflows/**"  # <-- ADDED for P3.1 / P3.2
+          - ".github/dependabot*"
+          - ".github/release-drafter*"
+          - ".gitlab-ci.yml"        # <-- ADDED for P3.1 / P3.2
+          - "*.tf"                  # <-- ADDED for P3.4 (Terraform)
+          - "Pulumi.*"              # <-- ADDED for P3.4 (Pulumi)
+      - strategy: dynamic_tool
+        evidence_class: container_linter
+        output: {format: json_or_text}
+      - strategy: dynamic_tool
+        evidence_class: k8s_linter
+        output: {format: json_or_text}
+
+  # -----------------------
+  # Domain branches
+  # -----------------------
+
+  api_backend_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "openapi*.yml"
+          - "openapi*.yaml"
+          - "*swagger*.yml"
+          - "*swagger*.yaml"
+          - "**/*.graphql"
+      - strategy: code_search
+        # max_files: 14
+        # max_snippet_lines: 90
+        queries:
+          - "route"
+          - "router"
+          - "controller"
+          - "handler"
+          - "middleware"
+          - "cors"
+          - "rate limit"
+          - "pagination"
+          - "Route::"     # <-- ADDED (PHP/Laravel)
+          - "gin."        # <-- ADDED (Go)
+          - "FastAPI"     # <-- ADDED (Python)
+          - "proto"        # <-- ADDED (gRPC)
+          - "csrf"         # <-- ADDED (security-related)
+          - "cors"         # <-- ADDED (security-related)
+          - "content-security-policy"  # <-- ADDED (security-related)
+      - strategy: simal_search
+        max_snippet_lines: 30
+        max_hits: 10
+        max_total_hits: 40
+        queries:
+          - "api:"
+          - "endpoint:"
+          - "route:"
+          - "router:"
+          - "controller:"
+          - "handler:"
+          - "middleware:"
+          - "cors:"
+          - "rate limit:"
+          - "pagination:"
+
+  data_persistence_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        # max_files: 14
+        # max_snippet_lines: 80
+        queries:
+          - "migration"
+          - "transaction"
+          - "pool"
+          - "connect"
+          - "SELECT "
+          - "index"
+          - "queue"
+          - "dlq"
+          - "backoff"
+          - "Eloquent"    # <-- ADDED (PHP)
+          - "gorm"        # <-- ADDED (Go)
+          - "sqlalchemy"  # <-- ADDED (Python)
+
+  frontend_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: standard_linter
+        output: {format: json_or_text}
+      - strategy: dynamic_tool
+        evidence_class: sast_scanner
+        params: {ruleset: "frontend-xss-dom"}
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "useEffect"
+          - "setState"
+          - "redux"
+          - "zustand"
+          - "innerHTML"
+          - "dangerouslySetInnerHTML"
+          - "error boundary"
+
+  mobile_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: code_search
+        # max_files: 10
+        # max_snippet_lines: 90
+        queries:
+          - "permission"
+          - "background"
+          - "foreground"
+          - "thread"
+          - "async"
+          - "battery"
+          - "keystore"
+          - "keychain"
+          - "TLS"
+
+  ml_repro_and_eval:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "requirements*.txt"
+          - "poetry.lock"
+          - "environment.yml"
+          - "dvc.yaml"
+          - ".dvc/**"
+          - "configs/**"
+          - "hydra/**"
+          - "wandb/**"
+          - "mlruns/**"
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "seed"
+          - "split"
+          - "train"
+          - "eval"
+          - "test"
+          - "leak"
+          - "wandb"
+          - "mlflow"
+
+  library_packaging_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "CHANGELOG*"
+          - "HISTORY*"
+          - "NEWS*"
+          - "RELEASE_NOTES*"
+          - "MIGRATION*"
+          - "UPGRADE*"
+          - "UPGRADING*"
+          - "RELEASING*"
+          - "changes/**"
+          - "changelog.d/**"
+          - "newsfragments/**"
+          - ".changes/**"
+          - "releasenotes/**"
+          - "docs/guide*"
+          - "docs/tutorial*"
+          - "docs/upgrading*"
+          - "docs/migration*"
+          - "docs/release*"
+          - "docs/releases/**"
+          - "docs/changelog/**"
+          - "examples/**"
+          - "pyproject.toml"
+          - "setup.cfg"
+          - "setup.py"
+          - "package.json"
+          - "go.mod"
+          - "Cargo.toml"
+          - "*.csproj"
+      - strategy: code_search
+        # max_files: 8
+        # max_snippet_lines: 90
+        queries:
+          - "export "
+          - "public "
+          - "__all__"
+          - "semver"
+          - "deprecated"
+          - "compatibility"
+          - "migration"
+          - "upgrade"
+          - "release notes"
+
+  concurrency_async_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: sast_scanner
+        params: {ruleset: "concurrency-timeouts"}
+        output: {format: json}
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 80
+        queries:
+          - "timeout"
+          - "context"
+          - "cancel"
+          - "await"
+          - "async"
+          - "goroutine"
+          - "mutex"
+          - "lock"
+          - "deadlock"
+          - "race"
+          - "sync.Once"
+          - "RWMutex"
+          - "atomic"
+          - "thread-safe"
+
+  # --- README quality / onboarding (J1)
+  readme_onboarding_content:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns: ["README*", "Readme*", "docs/guide*", "docs/quickstart*", "docs/getting-started*", "examples/**"]
+      - strategy: code_search
+        # max_files: 10
+        # max_snippet_lines: 160
+        queries:
+          - "Quickstart"
+          - "Getting started"
+          - "Installation"
+          - "Install"
+          - "Example"
+          - "Guide"
+          - "Usage"
+          - "Run"
+          - "Configuration"
+          - "ENV"
+          - ".env"
+          - "Troubleshooting"
+
+  # --- API usage docs (J2)
+  api_usage_docs_content:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "README*"
+          - "Readme*"
+          - "CHANGELOG*"
+          - "HISTORY*"
+          - "NEWS*"
+          - "RELEASE_NOTES*"
+          - "MIGRATION*"
+          - "UPGRADE*"
+          - "UPGRADING*"
+          - "RELEASING*"
+          - "changes/**"
+          - "changelog.d/**"
+          - "newsfragments/**"
+          - ".changes/**"
+          - "releasenotes/**"
+          - "docs/**"
+          - "docs/guide*"
+          - "docs/tutorial*"
+          - "docs/examples/**"
+          - "docs/upgrading*"
+          - "docs/migration*"
+          - "docs/release*"
+          - "docs/releases/**"
+          - "docs/changelog/**"
+          - "examples/**"
+          - "openapi*.yml"
+          - "openapi*.yaml"
+          - "*swagger*.yml"
+          - "*swagger*.yaml"
+          - "**/*.graphql"
+      - strategy: code_search
+        # max_files: 12
+        # max_snippet_lines: 160
+        queries:
+          - "API"
+          - "Endpoint"
+          - "Authentication"
+          - "Authorization"
+          - "Bearer "
+          - "Quickstart"
+          - "Tutorial"
+          - "Example"
+          - "Reference"
+          - "curl "
+          - "GET "
+          - "POST "
+          - "migration"
+          - "upgrade"
+          - "release notes"
+          - "version"
+
+  # --- test quality sampling (G2)
+  tests_quality_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "tests/**"
+          - "**/__tests__/**"
+          - "**/*test*.*"
+          - "pytest.ini"
+          - "jest.config.*"
+          - "phpunit.xml*"
+          - "pest.php"
+      - strategy: dynamic_tool
+        evidence_class: test_runner
+        output: {format: junit_or_json}
+      - strategy: code_search
+        # max_files: 16
+        # max_snippet_lines: 140
+        queries:
+          - "sleep("
+          - "time.sleep"
+          - "Date.now"
+          - "Math.random"
+          - "random("
+          - "assert"
+          - "expect("
+          - "mock"
+          - "fixture"
+          - "setUp"
+          - "tearDown"
+
+  # --- secrets + handling (H1)
+  secrets_and_handling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: dynamic_tool
+        evidence_class: secrets_scanner
+        output: {format: json}
+      - strategy: file_match
+        patterns:
+          - ".env.example"
+          - ".env.*"
+          - "config/**"
+          - "bootstrap/**"
+          - "k8s/**"
+          - "helm/**"
+          - "Dockerfile*"
+          - "docker-compose*.yml"
+          - "docker-compose*.yaml"
+          - ".env.dist"
+          - ".devcontainer/**"
+          - "devcontainer.json"
+          - "environment.yml"
+      - strategy: code_search
+        # max_files: 20
+        # max_snippet_lines: 120
+        queries:
+          - "logger"
+          - "log."
+          - "console.log"
+          - "print("
+          - "APP_KEY"
+          - "JWT"
+          - "SECRET"
+          - "PASSWORD"
+          - "TOKEN"
+          - "Authorization"
+          - "redact"
+          - "mask"
+          - "DB_PASSWORD"
+          - "DB_HOST"
+          - "REDIS"
+          - "getenv"
+          - "env("
+          - "dotenv"
+          - "example"
+          - "placeholder"
+  
+  edge_case_and_state_sampling:
+    grading_mode: llm_assisted
+    evidence:
+      - strategy: file_match
+        patterns:
+          - "tests/**"
+          - "**/__tests__/**"
+          - "**/*test*.*"
+          - "migrations/**"
+          - "database/migrations/**"
+          - "alembic/**"
+          - "db/migrations/**"
+          - "schema/**"
+          - "config/**"
+          - "bootstrap/**"
+          - "CHANGELOG*"
+          - "RELEASE_NOTES*"
+
+      - strategy: code_search
+        # max_files: 18
+        # max_snippet_lines: 100
+        queries:
+          # --- edge cases / defaults / nullability
+          - "null"
+          - "nil"
+          - "None"
+          - "undefined"
+          - "default"
+          - "fallback"
+          - "empty("
+          - "len("
+          - "count("
+          - "optional"
+          - "nullable"
+          - "required"
+          - "min_length"
+          - "max_length"
+          - "validate"
+          - "validator"
+          - "schema"
+          - "if not"
+          - "if err != nil"
+          - "try:"
+          - "except"
+          - "catch"
+
+          # --- state / mutation / lifecycle / concurrency-adjacent safety
+          - "global "
+          - "singleton"
+          - "setState"
+          - "dispatch("
+          - "mutex"
+          - "lock"
+          - "unlock"
+          - "atomic"
+          - "compareAndSwap"
+          - "transaction"
+          - "rollback"
+          - "commit"
+
+          # --- compatibility / migrations / version guards
+          - "migration"
+          - "migrate"
+          - "v1"
+          - "v2"
+          - "deprecated"
+          - "deprecation"
+          - "backward"
+          - "compat"
+          - "fallback"
+          - "feature flag"
+          - "feature_flag"
+          - "upgrade"
+          - "downgrade"
