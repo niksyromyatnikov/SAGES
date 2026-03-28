@@ -1,0 +1,90 @@
+# SAGES LLM configuration
+#
+# Notes:
+# - You can provide API keys directly via `api_key`, or via an environment variable name
+#   via `api_key_env`.
+# - CLI flags still override config if provided.
+# - Keep this file out of git if it contains secrets.
+
+default_provider: openai
+
+providers:
+  openai:
+    # Prefer environment variables for local development and publishing safety.
+    api_key_env: OPENAI_API_KEY
+    # api_key: "set-locally-if-you-really-need-inline-credentials"
+
+    # Optional override for self-hosted / proxy endpoints
+    # api_base_url: "https://api.openai.com"
+
+    # Default model for both activation + scoring unless overridden
+    model: gpt-5.2-2025-12-11
+
+    # Optional per-phase overrides
+    # activation_model: gpt-5
+    # scoring_model: gpt-5
+
+    # Request behavior
+    temperature: 1.0 # the only supported temperature for reasoning gpt-5
+    #max_output_tokens: 32000
+    timeout_sec: 600
+
+    # Client retries
+    max_retries: 3
+    retry_backoff_sec: 5.0
+
+    # If supported by the endpoint/model, request strict JSON objects.
+    force_json_object: true
+
+    # Provider-specific thinking / reasoning controls
+    # For OpenAI Chat Completions (model-dependent): reasoning_effort: low|medium|high
+    thinking:
+      enabled: true
+      reasoning_effort: medium
+
+    # Advanced: raw provider passthrough options (merged last)
+    provider_options:
+      max_completion_tokens: 128000
+
+  gemini:
+    api_key_env: GEMINI_API_KEY
+    # api_base_url: "https://generativelanguage.googleapis.com"
+    model: gemini-1.5-pro
+
+    temperature: 0.0
+    max_output_tokens: 4096
+    timeout_sec: 180
+
+    max_retries: 3
+    retry_backoff_sec: 10.0
+
+    # Gemini doesn't support OpenAI-style response_format; JSON is enforced by prompt + parsing.
+    force_json_object: false
+
+    thinking:
+      enabled: true
+      # Maps to generationConfig.thinkingConfig.thinkingLevel
+      thinking_level: HIGH
+
+  claude:
+    api_key_env: ANTHROPIC_API_KEY
+    # api_base_url: "https://api.anthropic.com"
+    # Optional headers/behavior are controlled via env vars:
+    # - ANTHROPIC_VERSION
+    # - ANTHROPIC_BETA
+    # - ANTHROPIC_THINKING_BUDGET_TOKENS
+    model: claude-3-7-sonnet-latest
+
+    temperature: 0.0
+    max_output_tokens: 4096
+    timeout_sec: 240
+
+    max_retries: 3
+    retry_backoff_sec: 5.0
+
+    force_json_object: false
+
+    thinking:
+      enabled: true
+      # Maps to Messages API: thinking: {type: enabled, budget_tokens: N}
+      budget_tokens: 32000
