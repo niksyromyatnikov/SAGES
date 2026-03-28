@@ -1,0 +1,589 @@
+# SAGES Baseline Rubric DAG v0.1 (patched with evidence_profile per group)
+# Leaf scoring: 0..5
+# N/A handling: gated leaves are excluded; weights renormalize among remaining siblings
+# Default leaf weight in a group: module_weight * group_weight / (#leaves in group)
+
+root:
+  id: R0
+  name: Repository Quality Score
+  aggregation: weighted_mean_over_enabled_modules
+
+modules:
+
+  - id: A
+    name: Repo governance & hygiene
+    module_weight: 0.05
+    applies_if: always
+    groups:
+      - id: A1
+        name: Legal & community basics
+        group_weight: 0.35
+        evidence_profile: doc_files_basic_with_content
+        include_simal_schema_in_scoring: false
+        leaves:
+          - A1.1: "License file present and appears to be a recognized open-source/commercial license (SPDX identifier or common license name present)."
+          - A1.2: "Maintainers/contact/governance info is present (README, CODEOWNERS, SECURITY, AUTHORS, or equivalent)."
+          - A1.3: "CONTRIBUTING guidelines exist (how to build/test/submit changes)."
+          - A1.4: "Code of Conduct or equivalent community policy exists (if public OSS)."
+      - id: A2
+        name: Repo structure & discoverability
+        group_weight: 0.40
+        evidence_profile: repo_entrypoints_discovery
+        include_simal_schema_in_scoring: false
+        leaves:
+          - A2.1: "Repository has a coherent top-level structure (src/tests/docs/etc.)."
+          - A2.2: "Entrypoints and primary artifacts are easy to find (main modules, commands)."
+          - A2.3: "Generated/build artifacts are excluded (proper .gitignore usage)."
+          - A2.4: "No large binary blobs committed without justification (or handled via LFS/releases)."
+      - id: A3
+        name: Change tracking
+        group_weight: 0.25
+        evidence_profile: doc_files_plus_templates_and_changelog
+        include_simal_schema_in_scoring: false
+        leaves:
+          - A3.1: "Changelog/release notes exist (CHANGELOG/RELEASE_NOTES or equivalent file)."
+          - A3.2: "Issue/PR templates or contribution workflow improves triage quality (optional but beneficial)."
+
+  - id: B
+    name: Build, dependencies & reproducibility
+    module_weight: 0.08
+    applies_if: always
+    groups:
+      - id: B1
+        name: Build/install clarity
+        group_weight: 0.35
+        evidence_profile: build_and_toolchain_declaration
+        include_simal_schema_in_scoring: false
+        leaves:
+          - B1.1: "Build/install/run steps are documented and appear complete for a fresh environment (commands, prerequisites)."
+          - B1.2: "Project declares required runtime/build versions (language/toolchain) explicitly."
+          - B1.3: "Build scripts/docs are consistent (no conflicting instructions for the same workflow)."
+          - B1.4: "Optional: one-command bootstrap (make/bootstrap script) exists for devs."
+      - id: B2
+        name: Dependency hygiene
+        group_weight: 0.40
+        evidence_profile: dependency_hygiene_policy
+        include_simal_schema_in_scoring: false
+        leaves:
+          - B2.1: "Dependencies are pinned/locked where applicable (lockfile or exact versions)."
+          - B2.2: "Vulnerability scanning is available (SCA tool succeeded OR is clearly configured)."
+          - B2.3: "Dependency footprint is reasonable for scope (no obvious unnecessary heavy deps) based on inventory/manifests."
+          - B2.4: "Vendoring/private deps handled reproducibly (documented, pinned, or lockfile-based)."
+          - B2.5: "No insecure/unsupported dependency sources (unverified mirrors, arbitrary curl|bash installers for deps)."
+      - id: B3
+        name: Environment definition
+        group_weight: 0.25
+        evidence_profile: env_definition_and_defaults
+        include_simal_schema_in_scoring: false
+        leaves:
+          - B3.1: "Dev environment can be reproduced (container/devcontainer/nix/conda/poetry/etc.)."
+          - B3.2: "Local configuration defaults/examples exist and are safe (example env/config, documented defaults)."
+          - B3.3: "Basic dev run does not require real secrets; placeholders/stubs are provided (e.g., .env.example)."
+
+  - id: C
+    name: Architecture & dependency structure
+    module_weight: 0.10
+    applies_if: always
+    groups:
+      - id: C1
+        name: Modularity & boundaries
+        group_weight: 0.45
+        evidence_profile: simal_modularity_and_interfaces
+        include_simal_schema_in_scoring: false
+        leaves:
+          - C1.1: "Clear module/package boundaries exist (no 'god' module)."
+          - C1.2: "Separation of concerns is evident (UI/business/data, layers, adapters)."
+          - C1.3: "Configuration is separated from logic (no scattered magic env reads)."
+          - C1.4: "Public interfaces are stable/explicit (APIs, exported symbols, contracts)."
+          - C1.5: "Cross-module dependencies are justified (no arbitrary reach-through imports)."
+          - C1.6: "Domain concepts are represented consistently (ubiquitous language / naming coherence)."
+      - id: C2
+        name: Dependency graph health
+        group_weight: 0.35
+        evidence_profile: simal_arch_graph_metrics
+        include_simal_schema_in_scoring: false
+        leaves:
+          - C2.1: "No strong evidence of circular dependencies in sampled imports/service edges (best-effort static proxy; not a proof)."
+          - C2.2: "Dependency direction matches intended layering (low-level not depending on high-level)."
+          - C2.3: "Shared utilities are not abused as dumping ground."
+          - C2.4: "Reasonable cohesion: related code is co-located; unrelated code isn't coupled."
+      - id: C3
+        name: Extensibility & composition
+        group_weight: 0.20
+        evidence_profile: simal_modularity_and_interfaces
+        include_simal_schema_in_scoring: false
+        leaves:
+          - C3.1: "Composition root / wiring is explicit (DI, factories, module init)."
+          - C3.2: "Cross-cutting concerns handled centrally (logging/auth/metrics middleware, etc.)."
+          - C3.3: "Plugin/extension points exist when appropriate (without overengineering)."
+          - C3.4: "Runtime feature flags/config toggles are implemented safely when present."
+
+  - id: D
+    name: Code hygiene & readability
+    module_weight: 0.08
+    applies_if: always
+    groups:
+      - id: D1
+        name: Consistency & style
+        group_weight: 0.35
+        evidence_profile: lint_and_style
+        include_simal_schema_in_scoring: false
+        leaves:
+          - D1.1: "Formatter/linter configuration exists."
+          - D1.2: "Naming is consistent and intention-revealing (modules, functions, variables)."
+          - D1.3: "Code conventions are enforced (style guides, lint rules)."
+          - D1.4: "No pervasive commented-out code / dead blocks without explanation."
+      - id: D2
+        name: Complexity & duplication
+        group_weight: 0.40
+        evidence_profile: complexity_and_duplication
+        include_simal_schema_in_scoring: false
+        leaves:
+          - D2.1: "High cyclomatic complexity hotspots are limited or refactored."
+          - D2.2: "Functions/classes are reasonably sized (no extremely long units)."
+          - D2.3: "Duplication is controlled (DRY violations not pervasive)."
+      - id: D3
+        name: Documentation-in-code
+        group_weight: 0.25
+        evidence_profile: docs_in_code_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - D3.1: "Public APIs have docstrings/comments describing intent and usage."
+          - D3.2: "Non-obvious logic is explained (why, not what)."
+          - D3.3: "TODO/FIXME debt is bounded and tracked (not unbounded rot)."
+          - D3.4: "Error messages are actionable and specific."
+
+  - id: E
+    name: Reliability, correctness & robustness
+    module_weight: 0.10
+    applies_if: always
+    groups:
+      - id: E1
+        name: Input boundaries & invariants
+        group_weight: 0.35
+        evidence_profile: reliability_error_timeout_rules
+        include_simal_schema_in_scoring: false
+        leaves:
+          - E1.1: "External inputs are validated at boundaries (API/CLI/file ingestion)."
+          - E1.2: "Schema/contract checks exist for structured inputs (JSON/schema/types)."
+          - E1.3: "Critical invariants are asserted/checked (nullability/bounds/state)."
+          - E1.4: "Error paths for invalid inputs are handled predictably (no crashes/leaks)."
+      - id: E2
+        name: Error handling discipline
+        group_weight: 0.35
+        evidence_profile: reliability_error_timeout_rules
+        include_simal_schema_in_scoring: false
+        leaves:
+          - E2.1: "Errors propagate with context (wrapping/annotation), not swallowed."
+          - E2.2: "Error categories/severity are distinguished (recoverable vs fatal)."
+          - E2.3: "Retries/timeouts are used appropriately for remote/IO operations."
+          - E2.4: "Resource cleanup is correct across success/failure paths."
+          - E2.5: "Idempotency is considered where operations may repeat (retries, jobs)."
+      - id: E3
+        name: Determinism
+        group_weight: 0.15
+        evidence_profile: determinism_and_seeds
+        include_simal_schema_in_scoring: false
+        leaves:
+          - E3.1: "Non-determinism is controlled (random seeds, ordering, time dependence)."
+
+      - id: E4
+        name: Edge cases & state safety
+        group_weight: 0.15
+        evidence_profile: edge_case_and_state_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - E4.1: "Common edge cases appear to be handled in sampled code/tests (empty, missing, null/default, invalid input)."
+          - E4.2: "State mutation and lifecycle transitions appear controlled in sampled code (no obvious unsafe global/shared-state patterns)."
+          - E4.3: "Compatibility/migration/version-transition handling is visible where relevant (migrations, version guards, deprecations, fallback paths)."
+
+  - id: F
+    name: Performance & resource safety
+    module_weight: 0.06
+    applies_if: always
+    groups:
+      - id: F1
+        name: Efficiency basics
+        group_weight: 0.55
+        evidence_profile: performance_smells_rules
+        include_simal_schema_in_scoring: false
+        leaves:
+          - F1.1: "No obvious performance risk indicators (N+1 patterns, unbounded loops over collections, heavy serialization in hot paths) in sampled code + SAST hints."
+          - F1.2: "Timeouts/backpressure exist for potentially unbounded waits (IO/queues)."
+      - id: F2
+        name: Resource limits & graceful behavior
+        group_weight: 0.45
+        evidence_profile: performance_smells_rules
+        include_simal_schema_in_scoring: false
+        leaves:
+          - F2.1: "Batching/streaming patterns exist where clearly relevan."
+          - F2.2: "Performance expectations are documented or tested for critical paths."
+
+  - id: G
+    name: Testing & testability
+    module_weight: 0.10
+    applies_if: always
+    groups:
+      - id: G1
+        name: Test presence & scope
+        group_weight: 0.45
+        evidence_profile: tests_and_ci_probe
+        include_simal_schema_in_scoring: false
+        leaves:
+          - G1.1: "Unit tests exist for core logic (non-trivial coverage)."
+          - G1.2: "Integration/E2E tests exist where appropriate (services, apps)."
+          - G1.3: "Tests are runnable via documented command(s)."
+          - G1.4: "Test data/fixtures are managed cleanly (no brittle ad-hoc data)."
+          - G1.5: "CI enforces at least baseline test execution (or documented exception)."
+      - id: G2
+        name: Test quality
+        group_weight: 0.35
+        evidence_profile: tests_quality_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - G2.1: "Tests are deterministic (no flaky defaults, controlled time/randomness)."
+          - G2.2: "Assertions check meaningful behavior, not incidental outputs."
+          - G2.3: "Critical failure modes are tested (error paths, invalid inputs)."
+          - G2.4: "Boundary contracts are tested (API/schema, serialization)."
+      - id: G3
+        name: Testability in design
+        group_weight: 0.20
+        evidence_profile: simal_modularity_and_interfaces
+        include_simal_schema_in_scoring: false
+        leaves:
+          - G3.1: "Code is structured for injection/mocking (no hardwired globals/singletons)."
+          - G3.2: "Side-effects are isolated (IO boundaries, adapters)."
+          - G3.3: "Test layout suggests local iteration is feasible (unit tests separated from heavier integration flows), where evident."
+
+  - id: H
+    name: Security & supply chain
+    module_weight: 0.15
+    applies_if: always
+    groups:
+      - id: H1
+        name: Secrets & sensitive data
+        group_weight: 0.25
+        evidence_profile: secrets_and_handling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - H1.1: "No hardcoded secrets/keys/tokens in repository (or history is mitigated)."
+          - H1.2: "Sensitive values are not logged (or are consistently redacted)."
+          - H1.3: "Secure secret injection mechanism used (env/secret store), not plaintext config."
+          - H1.4: "Secrets/config are injected via environment/secret management rather than committed plaintext."
+      - id: H2
+        name: Dependencies & artifacts
+        group_weight: 0.25
+        evidence_profile: sca_and_provenance
+        include_simal_schema_in_scoring: false
+        leaves:
+          - H2.1: "Dependencies pinned/locked to reduce supply-chain drift."
+          - H2.2: "Vulnerability scanning exists (SCA) or is easy to run."
+          - H2.3: "Build scripts avoid unverified downloads (no unsafe curl|bash patterns)."
+          - H2.4: "Third-party code provenance is clear (vendored code documented)."
+      - id: H3
+        name: Input validation & injection safety
+        group_weight: 0.25
+        evidence_profile: injection_and_unsafe_ops
+        include_simal_schema_in_scoring: false
+        leaves:
+          - H3.1: "Untrusted input is validated/sanitized before use."
+          - H3.2: "No unsafe string concatenation for queries/commands where applicable."
+          - H3.3: "Output encoding/escaping applied where relevant (e.g., HTML/templates)."
+          - H3.4: "File/path handling prevents traversal and unsafe filesystem access."
+          - H3.5: "Deserialization is safe (no unsafe eval/unpickling patterns)."
+      - id: H4
+        name: Auth, access control & secure defaults
+        group_weight: 0.25
+        evidence_profile: auth_and_secure_defaults_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - H4.1: "Authentication/authorization boundaries are explicit where applicable."
+          - H4.2: "Privileged operations are guarded consistently (no bypass paths)."
+          - H4.3: "Security-relevant events are auditable (logs/trace IDs) without leaking secrets."
+          - H4.4: "Transport security is configured appropriately (TLS, secure endpoints) when applicable."
+          - H4.5: "Insecure debug/admin modes are disabled by default or clearly scoped."
+
+  - id: I
+    name: Operability & observability
+    module_weight: 0.07
+    applies_if: always
+    groups:
+      - id: I1
+        name: Logging/metrics/tracing
+        group_weight: 0.45
+        evidence_profile: observability_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - I1.1: "Logging is consistent and useful (levels, context, no spam)."
+          - I1.2: "Logs include correlation identifiers where relevant (request/job IDs)."
+          - I1.3: "Basic metrics exist or are easy to integrate (health/perf counters)."
+          - I1.4: "Tracing/instrumentation exists for distributed systems (if applicable)."
+      - id: I2
+        name: Runtime behavior
+        group_weight: 0.35
+        evidence_profile: observability_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - I2.1: "Health checks/readiness signals exist for services (if applicable)."
+          - I2.2: "Graceful shutdown supported (drains in-flight work, closes resources)."
+          - I2.3: "Configuration validation occurs at startup (fail fast for invalid config)."
+      - id: I3
+        name: Runbooks & supportability
+        group_weight: 0.20
+        evidence_profile: runbook_and_ops_docs
+        include_simal_schema_in_scoring: true
+        leaves:
+          - I3.1: "Operational guidance exists for common failures (runbook notes)."
+          - I3.2: "Error reporting/crash reporting exists for user-facing apps (if applicable)."
+          - I3.3: "Deployment/runtime assumptions are documented (ports, env vars, deps)."
+
+  - id: J
+    name: Documentation & usability of the project
+    module_weight: 0.04
+    applies_if: always
+    groups:
+      - id: J1
+        name: README and onboarding
+        group_weight: 0.50
+        evidence_profile: readme_onboarding_content
+        include_simal_schema_in_scoring: false
+        leaves:
+          - J1.1: "README clearly states purpose, audience, and primary use-case."
+          - J1.2: "Quickstart example is runnable and matches current code."
+          - J1.3: "Install/build/run instructions are complete and unambiguous."
+          - J1.4: "Configuration options and defaults are documented."
+          - J1.5: "Troubleshooting section exists for common issues (optional but valuable)."
+      - id: J2
+        name: API/usage docs
+        group_weight: 0.30
+        evidence_profile: api_usage_docs_content
+        include_simal_schema_in_scoring: false
+        leaves:
+          - J2.1: "Public API usage is documented (interfaces, expected behavior)."
+          - J2.2: "Examples/tutorials exist for non-trivial features."
+          - J2.3: "Versioning/release process is documented when relevant."
+      - id: J3
+        name: Architecture docs
+        group_weight: 0.20
+        evidence_profile: docs_arch_and_adr
+        include_simal_schema_in_scoring: false
+        leaves:
+          - J3.1: "High-level architecture/module map exists for non-trivial projects."
+          - J3.2: "Key design decisions are recorded (ADRs or equivalent) where relevant."
+
+  # --------------------------
+  # GATED DOMAIN BRANCHES
+  # --------------------------
+
+  - id: K
+    name: Web/API backend
+    module_weight: 0.02
+    applies_if: uses_api == true
+    groups:
+      - id: K1
+        name: API contract & correctness
+        group_weight: 0.50
+        evidence_profile: api_backend_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - K1.1: "API contract is explicit (OpenAPI/GraphQL schema/typed handlers) where feasible."
+          - K1.2: "Versioning/backward compatibility strategy exists for public APIs."
+          - K1.3: "Request/response validation exists (schemas, typed DTOs) at boundaries."
+          - K1.4: "Pagination/filtering patterns are consistent (if list endpoints exist)."
+      - id: K2
+        name: Backend runtime concerns
+        group_weight: 0.50
+        evidence_profile: api_backend_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - K2.1: "No obvious handler-local shared mutable state patterns are visible in sampled backend code."
+          - K2.2: "Rate limiting / abuse protection exists when appropriate."
+          - K2.3: "Middleware/order effects are controlled (auth, logging, error handling)."
+          - K2.4: "CORS/security headers configured appropriately (if relevant)."
+
+  - id: L
+    name: Data persistence & messaging
+    module_weight: 0.02
+    applies_if: (uses_db == true) OR (uses_queue == true) OR (uses_filesystem == true)
+    groups:
+      - id: L1
+        name: Database correctness & safety
+        group_weight: 0.55
+        evidence_profile: data_persistence_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - L1.1: "Connection management/pooling is correct and bounded (if DB used)."
+          - L1.2: "Migrations/schema evolution are managed (versioned migrations or equivalent)."
+          - L1.3: "Transactions used appropriately to preserve consistency where needed."
+          - L1.4: "Query performance risks addressed (indexes, N+1 avoidance) where applicable."
+      - id: L2
+        name: Queues/jobs/events
+        group_weight: 0.45
+        evidence_profile: data_persistence_sampling
+        include_simal_schema_in_scoring: false
+        leaves:
+          - L2.1: "Message handling is idempotent or deduplicated (retries safe)."
+          - L2.2: "Retry strategy/backoff and failure handling (DLQ/quarantine) exist."
+          - L2.3: "At-least-once vs exactly-once assumptions are explicit (or handled)."
+          - L2.4: "Poison message / malformed event handling is safe."
+
+  - id: M
+    name: Web frontend
+    module_weight: 0.02
+    applies_if: repo_kind == web_frontend OR uses_frontend_framework == true
+    groups:
+      - id: M1
+        name: UI architecture & state
+        group_weight: 0.55
+        evidence_profile: frontend_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - M1.1: "State management boundaries are clear (local vs global state)."
+          - M1.2: "Global state mutations are controlled (no ad-hoc shared mutable state)."
+          - M1.3: "Component structure avoids excessive coupling (reusable components)."
+          - M1.4: "Side effects are managed predictably (effects/hooks, subscriptions cleanup)."
+      - id: M2
+        name: Frontend quality & security
+        group_weight: 0.45
+        evidence_profile: frontend_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - M2.1: "XSS and unsafe HTML injection patterns are avoided."
+          - M2.2: "Bundle/build pipeline is configured sensibly (tree-shaking, minimal bloat)."
+          - M2.3: "Accessibility considerations exist (basic ARIA/keyboard nav) where relevant."
+          - M2.4: "Client-side error handling is robust (error boundaries, fallback UI)."
+
+  - id: N
+    name: Mobile application
+    module_weight: 0.02
+    applies_if: repo_kind == mobile_app OR uses_mobile_sdk == true
+    groups:
+      - id: N1
+        name: Mobile constraints & UX safety
+        group_weight: 0.55
+        evidence_profile: mobile_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - N1.1: "Avoids main-thread blocking for IO/heavy work (async/background)."
+          - N1.2: "Permission usage is minimal and clearly justified."
+          - N1.3: "Offline/poor network behavior handled gracefully (retries, caching)."
+          - N1.4: "Crash reporting / error capture exists for production builds (if applicable)."
+      - id: N2
+        name: Data & security on device
+        group_weight: 0.45
+        evidence_profile: mobile_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - N2.1: "Sensitive data storage uses platform-secure storage mechanisms."
+          - N2.2: "Network calls use secure transport and certificate validation."
+          - N2.3: "Background tasks respect platform limits (battery/network policies)."
+
+  - id: O
+    name: ML / data science project
+    module_weight: 0.02
+    applies_if: repo_kind == ml_project OR uses_ml_framework == true
+    groups:
+      - id: O1
+        name: Reproducibility & tracking
+        group_weight: 0.55
+        evidence_profile: ml_repro_and_eval
+        include_simal_schema_in_scoring: true
+        leaves:
+          - O1.1: "Training/evaluation is reproducible (seeds, pinned deps, config snapshots)."
+          - O1.2: "Dataset versioning/provenance is tracked (hashes, DVC, manifests)."
+          - O1.3: "Experiment tracking exists (metrics logs, runs, artifacts) or is documented."
+          - O1.4: "Model artifacts are versioned and tied to data+code+config."
+      - id: O2
+        name: Evaluation hygiene & leakage prevention
+        group_weight: 0.45
+        evidence_profile: ml_repro_and_eval
+        include_simal_schema_in_scoring: true
+        leaves:
+          - O2.1: "Train/val/test splits are clearly defined and enforced."
+          - O2.2: "Leakage risks are addressed (feature leakage, target leakage, duplicates)."
+          - O2.3: "Metrics are appropriate and reported with baselines/ablations when relevant."
+          - O2.4: "Notebook usage (if any) is reproducible or converted into scripts/pipelines."
+
+  - id: P
+    name: DevOps / infrastructure / deployment
+    module_weight: 0.03
+    applies_if: has_container == true OR has_k8s == true OR has_iac == true OR repo_kind == infra
+    groups:
+      - id: P1
+        name: Containerization
+        group_weight: 0.40
+        evidence_profile: devops_container_k8s_iac
+        include_simal_schema_in_scoring: true
+        leaves:
+          - P1.1: "Dockerfile follows least-privilege best practices (non-root where feasible)."
+          - P1.2: "Image is minimized (multi-stage builds, avoids bloated layers) where feasible."
+          - P1.3: "Build caching is effective (stable layer ordering, avoids invalidation)."
+      - id: P2
+        name: Kubernetes/deployment readiness
+        group_weight: 0.35
+        evidence_profile: devops_container_k8s_iac
+        include_simal_schema_in_scoring: true
+        leaves:
+          - P2.1: "K8s manifests (if present) define resource requests/limits sensibly."
+          - P2.2: "Liveness/readiness probes exist where appropriate."
+          - P2.3: "Secrets/config are managed securely (no plaintext secrets in manifests)."
+      - id: P3
+        name: CI/CD pipeline hygiene
+        group_weight: 0.25
+        evidence_profile: devops_container_k8s_iac
+        include_simal_schema_in_scoring: true
+        leaves:
+          - P3.1: "CI pipeline is deterministic and idempotent (no fragile steps)."
+          - P3.2: "CI includes security checks (SAST/SCA) or documented security gate."
+          - P3.3: "Release workflow is controlled (tagging, versioning, artifact publishing)."
+          - P3.4: "“Infrastructure/deployment workflow is explicit and version-controlled."
+
+  - id: Q
+    name: Libraries / SDKs
+    module_weight: 0.02
+    applies_if: repo_kind == library
+    groups:
+      - id: Q1
+        name: API stability & compatibility
+        group_weight: 0.55
+        evidence_profile: library_packaging_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - Q1.1: "Public API surface is minimal and intentional (avoids accidental exports)."
+          - Q1.2: "Semantic versioning is followed (or compatibility policy documented)."
+          - Q1.3: "Backward compatibility strategy exists (deprecations, migration notes)."
+          - Q1.4: "Error types/contracts are stable and documented (for callers)."
+      - id: Q2
+        name: Packaging & consumer UX
+        group_weight: 0.45
+        evidence_profile: library_packaging_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - Q2.1: "Package metadata is complete (name, version, license, entrypoints)."
+          - Q2.2: "Examples exist for primary use cases (copy-paste runnable)."
+          - Q2.3: "Build targets/platform support is explicit (OS/arch/runtime constraints)."
+
+  - id: R
+    name: Concurrency & async safety
+    module_weight: 0.02
+    applies_if: uses_concurrency == true OR uses_async == true
+    groups:
+      - id: R1
+        name: Cancellation, timeouts, backpressure
+        group_weight: 0.55
+        evidence_profile: concurrency_async_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - R1.1: "Long-running operations support cancellation/interrupt mechanisms."
+          - R1.2: "Timeouts exist for async/remote waits (no unbounded awaits)."
+          - R1.3: "Backpressure or queue bounds exist (no unbounded buffering)."
+          - R1.4: "Concurrency primitives are used correctly (no obvious deadlock patterns)."
+      - id: R2
+        name: Shared-state correctness
+        group_weight: 0.45
+        evidence_profile: concurrency_async_sampling
+        include_simal_schema_in_scoring: true
+        leaves:
+          - R2.1: "Shared mutable state is minimized and synchronized properly."
+          - R2.2: "Thread-safety/async-safety is documented for public components where needed."
+          - R2.3: "Obvious race-prone shared mutable state patterns are limited in sampled code."
